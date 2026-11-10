@@ -8,7 +8,7 @@ Blockapp blocks the apps you can't stop opening, on Windows.
 
 ## Status
 
-Steps 1 and 2 of 4 are done: the project skeleton and app blocking. Scheduled focus sessions and the Focus Score come next.
+Steps 1 to 3 of 4 are done: the project skeleton, app blocking and scheduled focus sessions. The Focus Score comes next.
 
 ## Setup (Windows)
 
@@ -46,3 +46,18 @@ python -m blockapp block --minutes 25 # block for 25 minutes (leave out --minute
 While blocking is on, Blockapp closes those apps within about a second of them opening, and keeps a record of each attempt for the Focus Score.
 Windows system processes and your terminal can't be added, so you can't lock yourself out.
 Settings and history live in `%APPDATA%\Blockapp`.
+
+## Scheduled focus sessions
+
+```powershell
+python -m blockapp schedule add --days weekdays --start 09:00 --end 12:00
+python -m blockapp schedule add --days mon,wed --start 19:00 --end 21:00
+python -m blockapp schedule list
+python -m blockapp schedule remove 2
+python -m blockapp run           # follows your schedules while this window is open
+python -m blockapp startup on    # or: start quietly in the background every time you sign in
+python -m blockapp skip          # end the current scheduled session early
+```
+
+`--days` takes `weekdays`, `weekends`, `everyday`, a range like `mon-fri`, or a list like `mon,wed,fri`. Times are 24-hour. Windows that cross midnight (like `22:00` to `06:00`) work too.
+Changes to your block list or schedules apply right away, with no restart needed. `startup off` turns automatic start off again.

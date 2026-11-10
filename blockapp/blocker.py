@@ -54,3 +54,39 @@ def run_blocking(
             time.sleep(CHECK_EVERY_SECONDS)
     finally:
         log_event("session_end")
+
+
+def run_scheduler(on_change: Callable[[str], None] | None = None, stop_after: float | None = None) -> None:
+    """Run in the background: block apps whenever a schedule is on.
+
+    Re-reads settings every tick, so `add`, `schedule add` and `skip` take
+    effect without restarting. stop_after (seconds) is for testing."""
+    from blockapp.schedule import current_session_end, is_skipped
+    from blockapp.storage import load_config
+
+    started = time.monotonic()
+    in_session = False
+    seen: set = set()
+    while stop_after is None or time.monotonic() - started < stop_after:
+        now = datetime.now()
+        config = load_config()
+        end = current_session_end(now, config.get("schedules", []))
+        active = end is not None and not is_skipped(now, config)
+        if active and not in_session:
+            log_event("session_start", apps=config["blocked_apps"], scheduled=True, until=end.isoformat(timespec="seconds"))
+            if on_change:
+                on_change(f"Focus session on until {end:%H:%M}")
+            seen.clear()
+        elif not active and in_session:
+            log_event("session_end", scheduled=True)
+            if on_change:
+                on_change("Focus session over")
+        in_session = active
+        if active:
+            for name in close_blocked(config["blocked_apps"], already_closed=seen):
+                log_event("blocked", app=name)
+                if on_change:
+                    on_change(f"Closed {name}")
+        time.sleep(CHECK_EVERY_SECONDS)
+    if in_session:
+        log_event("session_end", scheduled=True)

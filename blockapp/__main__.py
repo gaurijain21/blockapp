@@ -8,7 +8,8 @@ from datetime import datetime
 
 from blockapp import __version__
 from blockapp import apps
-from blockapp.blocker import run_blocking
+from blockapp import schedule, startup
+from blockapp.blocker import run_blocking, run_scheduler
 
 
 def cmd_running(args) -> int:
@@ -66,6 +67,62 @@ def cmd_block(args) -> int:
     return 0
 
 
+def cmd_schedule_add(args) -> int:
+    try:
+        entry = schedule.add_schedule(args.days, args.start, args.end)
+    except ValueError as e:
+        print(e)
+        return 1
+    print(f"Added: {schedule.describe(entry)}")
+    print("Blocking follows your schedules while `python -m blockapp run` is running.")
+    return 0
+
+
+def cmd_schedule_list(args) -> int:
+    items = schedule.schedules()
+    if not items:
+        print("No schedules yet. Add one with: python -m blockapp schedule add --days weekdays --start 09:00 --end 12:00")
+    for i, entry in enumerate(items, 1):
+        print(f"  {i}. {schedule.describe(entry)}")
+    return 0
+
+
+def cmd_schedule_remove(args) -> int:
+    try:
+        print(f"Removed: {schedule.describe(schedule.remove_schedule(args.number))}")
+    except ValueError as e:
+        print(e)
+        return 1
+    return 0
+
+
+def cmd_skip(args) -> int:
+    end = schedule.skip_current()
+    if end:
+        print(f"Ended this focus session early. Blocking resumes with your next session after {end:%H:%M}.")
+    else:
+        print("No scheduled session is on right now.")
+    return 0
+
+
+def cmd_run(args) -> int:
+    print("Blockapp is following your schedules. Leave this window open, or turn on `startup on`.")
+    try:
+        run_scheduler(lambda msg: print(f"[{datetime.now():%H:%M:%S}] {msg}"))
+    except KeyboardInterrupt:
+        print("\nStopped.")
+    return 0
+
+
+def cmd_startup(args) -> int:
+    try:
+        print(startup.enable() if args.state == "on" else startup.disable())
+    except RuntimeError as e:
+        print(e)
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="blockapp", description="Block the apps you can't stop opening.")
     parser.add_argument("--version", action="version", version=f"Blockapp {__version__}")
@@ -82,6 +139,24 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("block", help="start blocking now")
     p.add_argument("--minutes", type=float, help="stop after this many minutes")
     p.set_defaults(func=cmd_block)
+
+    p = sub.add_parser("schedule", help="manage recurring focus sessions")
+    ssub = p.add_subparsers(dest="schedule_command", required=True)
+    q = ssub.add_parser("add", help="e.g. --days weekdays --start 09:00 --end 12:00")
+    q.add_argument("--days", default="weekdays", help="weekdays, weekends, everyday, mon-fri, or mon,wed,fri")
+    q.add_argument("--start", required=True, help="24-hour time, e.g. 09:00")
+    q.add_argument("--end", required=True, help="24-hour time, e.g. 12:00")
+    q.set_defaults(func=cmd_schedule_add)
+    ssub.add_parser("list", help="show your schedules").set_defaults(func=cmd_schedule_list)
+    q = ssub.add_parser("remove", help="remove a schedule by its number from `schedule list`")
+    q.add_argument("number", type=int)
+    q.set_defaults(func=cmd_schedule_remove)
+
+    sub.add_parser("skip", help="end the current scheduled session early").set_defaults(func=cmd_skip)
+    sub.add_parser("run", help="follow your schedules (keep running)").set_defaults(func=cmd_run)
+    p = sub.add_parser("startup", help="start Blockapp automatically when you sign in to Windows")
+    p.add_argument("state", choices=["on", "off"])
+    p.set_defaults(func=cmd_startup)
     return parser
 
 
