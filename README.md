@@ -8,7 +8,7 @@ Blockapp blocks the apps you can't stop opening, on Windows.
 
 ## Status
 
-Step 1 of 4 is done: the project skeleton. Blocking, scheduling and the Focus Score come next.
+Steps 1 and 2 of 4 are done: the project skeleton and app blocking. Scheduled focus sessions and the Focus Score come next.
 
 ## Setup (Windows)
 
@@ -32,3 +32,17 @@ python -m blockapp
 pip install --no-cache-dir pytest
 python -m pytest
 ```
+
+## Blocking apps
+
+```powershell
+python -m blockapp running            # see what's open, to find app names
+python -m blockapp add discord chrome # block apps (".exe" is optional)
+python -m blockapp list               # your block list
+python -m blockapp remove chrome      # unblock one
+python -m blockapp block --minutes 25 # block for 25 minutes (leave out --minutes to block until Ctrl+C)
+```
+
+While blocking is on, Blockapp closes those apps within about a second of them opening, and keeps a record of each attempt for the Focus Score.
+Windows system processes and your terminal can't be added, so you can't lock yourself out.
+Settings and history live in `%APPDATA%\Blockapp`.
