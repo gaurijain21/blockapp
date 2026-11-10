@@ -4,145 +4,190 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Blockapp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap">
+<script>
+  try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 <style>
   :root {
-    --bg: #f6f5f2; --card: #ffffff; --ink: #1d1d1f; --muted: #6e6e73; --line: #e6e4df;
-    --accent: #3d5afe; --accent-ink: #ffffff; --accent-soft: #e8ecff;
-    --good: #1f9d55; --warn: #d97706; --bad: #dc2626; --chip: #f0efeb;
+    --bg: #f6f4ff; --card: #ffffff; --ink: #1b1530; --muted: #7a7491; --line: #e8e4f7; --soft: #f0edfc;
+    --a1: #6d4aff; --a2: #ff5c9a; --on-accent: #ffffff; --glow: rgba(109, 74, 255, .28);
+    --good: #12b76a; --warn: #f59e0b; --bad: #ef4444; --shadow: 0 8px 30px rgba(60, 40, 140, .08);
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #141416; --card: #1d1d20; --ink: #f2f2f4; --muted: #9a9aa2; --line: #2c2c31;
-            --accent: #7b8cff; --accent-ink: #0f1020; --accent-soft: #262a45;
-            --good: #3ecf7a; --warn: #f5a524; --bad: #f87171; --chip: #26262b; }
+    :root:not([data-theme="light"]) {
+      --bg: #0e0c17; --card: #181527; --ink: #f3f0ff; --muted: #9b95b5; --line: #2a2640; --soft: #221e35;
+      --a1: #8d74ff; --a2: #ff6fa8; --on-accent: #ffffff; --glow: rgba(141, 116, 255, .35);
+      --good: #34d399; --warn: #fbbf24; --bad: #f87171; --shadow: 0 8px 30px rgba(0, 0, 0, .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e0c17; --card: #181527; --ink: #f3f0ff; --muted: #9b95b5; --line: #2a2640; --soft: #221e35;
+    --a1: #8d74ff; --a2: #ff6fa8; --on-accent: #ffffff; --glow: rgba(141, 116, 255, .35);
+    --good: #34d399; --warn: #fbbf24; --bad: #f87171; --shadow: 0 8px 30px rgba(0, 0, 0, .35);
   }
   * { box-sizing: border-box; }
+  html { color-scheme: light dark; }
   body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 880px; margin: 0 auto; padding: 24px 16px 56px; }
-  h1 { font-size: 20px; margin: 0 0 18px; letter-spacing: -0.01em; }
-  h2 { font-size: 17px; margin: 0 0 4px; }
-  .sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 16px; }
-  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; }
-  .row .card { margin-bottom: 0; }
-  .row + .card, .row + .row { margin-top: 16px; }
+         font: 15px/1.45 "Plus Jakarta Sans", system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
 
-  /* Focus hero */
-  .hero { text-align: center; padding: 34px 22px; }
-  .hero .big { font-size: 28px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.02em; }
-  .hero .timer { font-size: 64px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; line-height: 1.1; margin: 4px 0; }
-  .hero.on { background: var(--accent-soft); border-color: transparent; }
-  .lengths { display: inline-flex; background: var(--chip); border-radius: 999px; padding: 4px; margin: 14px 0 18px; }
-  .lengths button { border: 0; background: transparent; color: var(--ink); font: inherit; padding: 7px 16px; border-radius: 999px; cursor: pointer; }
-  .lengths button[aria-pressed="true"] { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.12); font-weight: 600; }
-  .btn { font: inherit; border: 0; border-radius: 10px; padding: 9px 16px; background: var(--accent); color: var(--accent-ink); cursor: pointer; font-weight: 600; }
-  .btn:disabled { opacity: .45; cursor: not-allowed; }
-  .btn.big { font-size: 17px; padding: 13px 34px; border-radius: 12px; }
-  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-  .blocking-line { color: var(--muted); font-size: 14px; margin-top: 14px; }
-  .blocking-line b { color: var(--ink); font-weight: 600; }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .logo { font-weight: 800; font-size: 22px; letter-spacing: -.03em; display: flex; align-items: center; gap: 8px; }
+  .logo i { width: 30px; height: 30px; border-radius: 10px; background: linear-gradient(135deg, var(--a1), var(--a2));
+            display: grid; place-items: center; font-style: normal; font-size: 16px; color: #fff; }
+  .top { display: flex; gap: 8px; align-items: center; }
+  .pill { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 14px; }
+  .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); font-size: 16px; }
 
-  /* Pick distractions */
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pick { font: inherit; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--card);
-          color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
-  .pick[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .pick .tag { font-size: 11px; opacity: .7; }
-  .pick .x { font-size: 15px; line-height: 1; margin-left: 2px; }
-  form.inline { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-  input, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-width: 0; }
-  input[type=text] { flex: 1 1 200px; }
-  .note { color: var(--muted); font-size: 13px; margin-top: 10px; }
-  .error { color: var(--bad); font-size: 13px; margin-top: 8px; min-height: 1em; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .step { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; margin: 0 0 14px; }
+  .step b { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px;
+            background: var(--soft); color: var(--a1); }
+  .step.done b { background: linear-gradient(135deg, var(--a1), var(--a2)); color: #fff; }
 
-  /* Automatic focus */
-  .list { list-style: none; padding: 0; margin: 0 0 6px; }
-  .list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
-  .list li:last-child { border-bottom: 0; }
-  .link { border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 14px; }
-  .link:hover { color: var(--bad); }
-  .days { display: flex; gap: 6px; flex-wrap: wrap; }
-  .day { font: inherit; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; font-weight: 600; font-size: 13px; }
-  .day[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .times { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; color: var(--muted); }
-  .empty { color: var(--muted); font-size: 14px; padding: 4px 0 10px; }
+  .tabs { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 5px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .tabs button { flex: 1; border: 0; background: transparent; border-radius: 14px; padding: 10px 6px; font-weight: 700; color: var(--muted); }
+  .tabs button[aria-selected="true"] { background: linear-gradient(135deg, var(--a1), var(--a2)); color: #fff; }
+  .tabs .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--good); margin-left: 6px; vertical-align: 2px; }
+  [role="tabpanel"][hidden] { display: none; }
+  .empty { color: var(--muted); font-size: 14px; text-align: center; }
 
-  /* Score */
-  .score-wrap { display: flex; align-items: center; gap: 22px; }
-  .ring { position: relative; width: 110px; height: 110px; flex: none; }
-  .ring svg { transform: rotate(-90deg); }
-  .ring .num { position: absolute; inset: 0; display: grid; place-items: center; font-size: 32px; font-weight: 700; }
-  .label { font-size: 17px; font-weight: 600; }
-  .rows { margin-top: 4px; color: var(--muted); font-size: 14px; }
-  .rows div { display: flex; justify-content: space-between; gap: 14px; padding: 2px 0; }
-  .rows b { color: var(--ink); font-weight: 600; white-space: nowrap; }
-  .bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-top: 6px; }
+  /* 1. Pick */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+  .tile { position: relative; border: 2px solid var(--line); background: var(--card); border-radius: 18px; padding: 14px 6px 10px;
+          display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 600; font-size: 13px;
+          transition: transform .12s, border-color .12s, box-shadow .12s; }
+  .tile:hover { transform: translateY(-2px); }
+  .tile .em { font-size: 26px; line-height: 1; }
+  .tile[aria-pressed="true"] { border-color: var(--a1); box-shadow: 0 0 0 4px var(--glow); }
+  .tile[aria-pressed="true"]::after { content: "✓"; position: absolute; top: 6px; right: 8px; width: 18px; height: 18px; border-radius: 50%;
+          background: var(--a1); color: #fff; font-size: 11px; display: grid; place-items: center; }
+  .tile.add { border-style: dashed; color: var(--muted); }
+  .tile .x { position: absolute; top: 4px; left: 8px; color: var(--muted); font-size: 14px; }
+  form.add { display: none; gap: 8px; margin-top: 12px; }
+  form.add.open { display: flex; }
+  input, select { font: inherit; color: var(--ink); background: var(--soft); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; min-width: 0; }
+  input[type=text] { flex: 1; }
+  .error { color: var(--bad); font-size: 13px; margin-top: 8px; }
+  .error:empty { display: none; }
+
+  /* 2. Focus */
+  .focus { text-align: center; }
+  .lengths { display: inline-flex; background: var(--soft); border-radius: 999px; padding: 4px; margin-bottom: 16px; }
+  .lengths button { border: 0; background: transparent; padding: 8px 18px; border-radius: 999px; font-weight: 600; color: var(--muted); }
+  .lengths button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .go { width: 100%; max-width: 360px; border: 0; border-radius: 16px; padding: 16px; font-size: 18px; font-weight: 800;
+        color: var(--on-accent); background: linear-gradient(135deg, var(--a1), var(--a2)); box-shadow: 0 10px 24px var(--glow);
+        transition: transform .12s, opacity .12s; }
+  .go:hover:not(:disabled) { transform: translateY(-1px); }
+  .go:disabled { background: var(--soft); color: var(--muted); box-shadow: none; }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .ring-wrap { position: relative; width: 210px; height: 210px; margin: 4px auto 14px; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-wrap .t { position: absolute; inset: 0; display: grid; place-content: center; }
+  .ring-wrap .time { font-size: 46px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .ring-wrap .until { color: var(--muted); font-size: 13px; }
+  .live { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--good); margin-bottom: 6px; }
+  .live::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 4px color-mix(in srgb, var(--good) 25%, transparent); }
+  .stop { border: 1px solid var(--line); background: transparent; border-radius: 12px; padding: 9px 18px; color: var(--muted); font-weight: 600; }
+  .stop:hover { color: var(--bad); border-color: var(--bad); }
+
+  /* Auto + Score */
+  .days { display: flex; gap: 6px; }
+  .day { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); font-weight: 700; font-size: 12px; color: var(--muted); }
+  .day[aria-pressed="true"] { background: var(--a1); border-color: var(--a1); color: #fff; }
+  .times { display: flex; gap: 6px; align-items: center; margin-top: 10px; color: var(--muted); }
+  .times input { padding: 7px 8px; }
+  .plus { border: 0; border-radius: 12px; padding: 8px 14px; font-weight: 700; color: #fff; background: var(--a1); }
+  .list { list-style: none; padding: 0; margin: 12px 0 0; }
+  .list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--soft); border-radius: 12px; margin-top: 6px; font-size: 14px; font-weight: 600; }
+  .list button { border: 0; background: transparent; color: var(--muted); font-size: 16px; }
+  .list button:hover { color: var(--bad); }
+
+  .score { display: flex; align-items: center; gap: 16px; }
+  .mini { position: relative; width: 76px; height: 76px; flex: none; }
+  .mini svg { transform: rotate(-90deg); }
+  .mini .n { position: absolute; inset: 0; display: grid; place-items: center; font-size: 22px; font-weight: 800; }
+  .score .lab { font-weight: 800; }
+  .score .sm { color: var(--muted); font-size: 13px; }
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 64px; margin-top: 14px; }
   .bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
-  .bar .fill { width: 100%; max-width: 36px; border-radius: 6px 6px 3px 3px; min-height: 3px; }
-  .bar .v, .bar .d { font-size: 12px; color: var(--muted); }
-  details { margin-top: 12px; color: var(--muted); font-size: 13px; }
-  summary { cursor: pointer; }
+  .bar .f { width: 100%; max-width: 26px; border-radius: 6px; min-height: 4px; }
+  .bar span { font-size: 11px; color: var(--muted); }
 </style>
 </head>
 <body>
 <main>
-  <h1>Blockapp</h1>
+  <header>
+    <div class="logo"><i>⛔</i>blockapp</div>
+    <div class="top">
+      <span class="pill" id="pill">🔥 –</span>
+      <button class="icon-btn" id="theme" aria-label="Switch light or dark mode">🌙</button>
+    </div>
+  </header>
 
-  <!-- 1. Focus -->
-  <section class="card hero" id="hero"></section>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="focus" aria-selected="true">🎯 Focus</button>
+    <button role="tab" data-tab="schedule" aria-selected="false">⏰ Schedule<span class="dot" id="sched-dot" hidden></span></button>
+    <button role="tab" data-tab="stats" aria-selected="false">📈 Stats</button>
+  </nav>
 
-  <!-- 2. What to block -->
+  <div role="tabpanel" id="tab-focus">
   <section class="card">
-    <h2>What distracts you?</h2>
-    <p class="sub">Tap to block it during focus. Websites get their tab closed, and apps get closed completely.</p>
-    <div class="chips" id="picks"></div>
-    <form class="inline" id="add-form">
-      <input type="text" id="add-name" list="running" placeholder="Something else? Type an app or website, like notepad or x.com" autocomplete="off">
+    <p class="step" id="step1"><b>1</b>Pick distractions</p>
+    <div class="tiles" id="tiles"></div>
+    <form class="add" id="add-form">
+      <input type="text" id="add-name" list="running" placeholder="App or website" autocomplete="off">
       <datalist id="running"></datalist>
-      <button class="btn">Add</button>
+      <button class="plus">Add</button>
     </form>
     <div class="error" id="add-error"></div>
   </section>
 
-  <div class="row">
-    <!-- 3. Automatic focus -->
+  <section class="card focus" id="focus"></section>
+  </div>
+
+  <div role="tabpanel" id="tab-schedule" hidden>
     <section class="card">
-      <h2>Automatic focus</h2>
-      <p class="sub">Focus turns on by itself at these times, so you don't have to remember.</p>
-      <ul class="list" id="schedules"></ul>
+      <p class="step">Auto-focus on</p>
       <div class="days" id="days"></div>
       <div class="times">
-        from <input type="time" id="start" value="09:00"> to <input type="time" id="end" value="12:00">
-        <button class="btn" id="add-schedule">Add</button>
+        <input type="time" id="start" value="09:00" aria-label="From"> – <input type="time" id="end" value="12:00" aria-label="To">
+        <button class="plus" id="add-schedule" aria-label="Add">+</button>
       </div>
       <div class="error" id="schedule-error"></div>
     </section>
-
-    <!-- 4. Score -->
     <section class="card">
-      <h2>Focus Score</h2>
-      <p class="sub">How focused you were today, out of 100.</p>
-      <div class="score-wrap">
-        <div class="ring">
-          <svg width="110" height="110" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="12"/>
-            <circle id="arc" cx="60" cy="60" r="52" fill="none" stroke="var(--good)" stroke-width="12"
-                    stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+      <p class="step">Your times</p>
+      <ul class="list" id="schedules"></ul>
+    </section>
+  </div>
+
+  <div role="tabpanel" id="tab-stats" hidden>
+    <section class="card">
+      <p class="step">Today</p>
+      <div class="score">
+        <div class="mini">
+          <svg width="76" height="76" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--soft)" stroke-width="14"/>
+            <circle id="arc" cx="60" cy="60" r="50" fill="none" stroke="var(--good)" stroke-width="14" stroke-linecap="round"
+                    stroke-dasharray="314.2" stroke-dashoffset="314.2"/>
           </svg>
-          <div class="num" id="score">–</div>
+          <div class="n" id="score">–</div>
         </div>
-        <div style="flex:1">
-          <div class="label" id="label"></div>
-          <div class="rows" id="breakdown"></div>
+        <div>
+          <div class="lab" id="label"></div>
+          <div class="sm" id="breakdown"></div>
         </div>
       </div>
-      <div class="bars" id="history"></div>
-      <details>
-        <summary>How is it worked out?</summary>
-        Every day starts at 100. You lose 5 points each time you open something blocked during focus (up to 40),
-        10 for stopping focus early (up to 20), and half a point for every minute you spend on your distractions
-        outside focus (up to 40).
-      </details>
+    </section>
+    <section class="card">
+      <p class="step">Last 7 days</p>
+      <div class="bars" id="history" style="height:120px"></div>
     </section>
   </div>
 </main>
@@ -151,53 +196,70 @@
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const colorFor = (s) => (s >= 70 ? "var(--good)" : s >= 50 ? "var(--warn)" : "var(--bad)");
+const EMOJI = { YouTube: "📺", Instagram: "📸", TikTok: "🎵", Discord: "💬", Netflix: "🍿", Reddit: "👽", Steam: "🎮",
+                Twitch: "🟣", Spotify: "🎧", WhatsApp: "📱", Facebook: "👍", Roblox: "🧱", Pinterest: "📌", "Prime Video": "🎬" };
+const emoji = (b) => EMOJI[b.label] || (b.kind === "site" ? "🌐" : "🖥️");
 
-let S = null;
-let minutes = 25;
-let secondsLeft = 0;
-const DAY_KEYS = ["mon","tue","wed","thu","fri","sat","sun"];
-const DAY_SHORT = ["M","T","W","T","F","S","S"];
-const DAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-const pickedDays = new Set(["mon","tue","wed","thu","fri"]);
+let S = null, minutes = 25, secondsLeft = 0;
+const DAY_KEYS = ["mon","tue","wed","thu","fri","sat","sun"], DAY_SHORT = ["M","T","W","T","F","S","S"];
+const pickedDays = new Set(DAY_KEYS.slice(0, 5));
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+                set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
-function fmt(sec) {
+// Theme: follows the system until you tap the button.
+function isDark() {
+  const t = document.documentElement.dataset.theme;
+  return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function paintThemeBtn() { $("theme").textContent = isDark() ? "☀️" : "🌙"; }
+$("theme").onclick = () => {
+  const next = isDark() ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  store.set("theme", next);
+  paintThemeBtn();
+};
+paintThemeBtn();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paintThemeBtn);
+
+const fmt = (sec) => {
   const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
   return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0");
+};
+
+function sessionTotal() {
+  // Remember how long this session was, so the ring can show progress.
+  const key = "total:" + S.session.until;
+  let total = +store.get(key) || 0;
+  if (secondsLeft > total) { total = secondsLeft; store.set(key, total); }
+  return total || secondsLeft || 1;
 }
 
-function listNames(items) {
-  const names = items.map((b) => b.label);
-  if (names.length <= 3) return names.join(", ");
-  return names.slice(0, 3).join(", ") + ` and ${names.length - 3} more`;
-}
-
-function renderHero() {
-  const hero = $("hero");
-  const nothing = S.blocked.length === 0;
+function renderFocus() {
+  const f = $("focus"), count = S.blocked.length;
   if (S.session.active) {
-    hero.classList.add("on");
-    hero.innerHTML = `
-      <p class="big">Focus is on</p>
-      <div class="timer" id="timer">${fmt(secondsLeft)}</div>
-      <p class="sub" style="margin:0 0 18px">left, until ${esc(S.session.until)}</p>
-      <button class="btn ghost" id="stop">Stop early</button>
-      <p class="blocking-line">${nothing ? "Nothing is blocked yet. Pick some distractions below."
-        : `Blocking <b>${esc(listNames(S.blocked))}</b>`}</p>`;
-    $("stop").onclick = () => {
-      if (confirm("Stop focus early? This takes 10 points off today's Focus Score.")) call("/api/skip");
-    };
+    const C = 2 * Math.PI * 92, frac = secondsLeft / sessionTotal();
+    f.innerHTML = `
+      <div class="live">Focusing</div>
+      <div class="ring-wrap">
+        <svg width="210" height="210" viewBox="0 0 210 210">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--a1)"/><stop offset="1" stop-color="var(--a2)"/></linearGradient></defs>
+          <circle cx="105" cy="105" r="92" fill="none" stroke="var(--soft)" stroke-width="14"/>
+          <circle id="prog" cx="105" cy="105" r="92" fill="none" stroke="url(#g)" stroke-width="14" stroke-linecap="round"
+                  stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - frac)}"/>
+        </svg>
+        <div class="t"><div class="time" id="timer">${fmt(secondsLeft)}</div><div class="until">until ${esc(S.session.until)}</div></div>
+      </div>
+      <button class="stop" id="stop">Stop early</button>`;
+    $("stop").onclick = () => { if (confirm("Stop early? −10 points.")) call("/api/skip"); };
   } else {
-    hero.classList.remove("on");
-    hero.innerHTML = `
-      <p class="big">Ready to focus?</p>
-      <div class="lengths" role="group" aria-label="How long">
-        ${[25, 50, 90].map((m) => `<button data-min="${m}" aria-pressed="${m === minutes}">${m} min</button>`).join("")}
+    f.innerHTML = `
+      <p class="step" style="justify-content:center"><b>2</b>Focus</p>
+      <div class="lengths" role="group" aria-label="Length">
+        ${[25, 50, 90].map((m) => `<button data-min="${m}" aria-pressed="${m === minutes}">${m}m</button>`).join("")}
       </div><br>
-      <button class="btn big" id="go" ${nothing ? "disabled" : ""}>Start focus</button>
-      <p class="blocking-line">${nothing ? "First, pick what distracts you below."
-        : `Blocks <b>${esc(listNames(S.blocked))}</b>`}
-        ${S.next ? `<br>Next automatic focus: <b>${esc(S.next)}</b>` : ""}</p>`;
-    hero.querySelectorAll("[data-min]").forEach((b) => b.onclick = () => { minutes = +b.dataset.min; renderHero(); });
+      <button class="go" id="go" ${count ? "" : "disabled"}>${count ? "Start" : "Pick something first ↑"}</button>
+      ${count ? `<div class="hint">Blocking ${count} ${count === 1 ? "thing" : "things"}${S.next ? ` · next auto: ${esc(S.next)}` : ""}</div>` : ""}`;
+    f.querySelectorAll("[data-min]").forEach((b) => b.onclick = () => { minutes = +b.dataset.min; renderFocus(); });
     $("go").onclick = () => call("/api/focus", { minutes });
   }
 }
@@ -205,39 +267,40 @@ function renderHero() {
 function render(s) {
   S = s;
   secondsLeft = s.session.seconds_left;
-  renderHero();
+  $("step1").classList.toggle("done", s.blocked.length > 0);
+  renderFocus();
 
-  const chip = (b, removable) => `
-    <button class="pick" aria-pressed="${removable || b.on}" data-kind="${b.kind}" data-value="${esc(b.value)}" data-on="${removable || b.on}">
-      ${esc(b.label)} <span class="tag">${b.kind === "site" ? "website" : "app"}</span>${removable ? '<span class="x">×</span>' : ""}
+  const tile = (b, custom) => `
+    <button class="tile" aria-pressed="${custom || b.on}" data-kind="${b.kind}" data-value="${esc(b.value)}" data-on="${custom || b.on}"
+            title="${b.kind === "site" ? "Website" : "App"}">
+      ${custom ? '<span class="x">×</span>' : ""}<span class="em">${emoji(b)}</span>${esc(b.label)}
     </button>`;
-  $("picks").innerHTML = s.suggestions.map((b) => chip(b, false)).join("") + s.custom.map((b) => chip(b, true)).join("");
+  $("tiles").innerHTML = s.suggestions.map((b) => tile(b, false)).join("") + s.custom.map((b) => tile(b, true)).join("")
+    + `<button class="tile add" id="open-add"><span class="em">＋</span>Other</button>`;
+  $("open-add").onclick = () => { $("add-form").classList.add("open"); $("add-name").focus(); };
   $("running").innerHTML = s.running.map((a) => `<option value="${esc(a)}">`).join("");
 
-  $("schedules").innerHTML = s.schedules.length
-    ? s.schedules.map((x) => `<li><span>${esc(x.text)}</span><button class="link" data-remove="${x.number}">Remove</button></li>`).join("")
-    : `<li class="empty">No automatic focus times yet. Pick days and times below.</li>`;
+  $("schedules").innerHTML = s.schedules.length ? s.schedules.map((x) =>
+    `<li><span>${esc(x.text)}</span><button data-remove="${x.number}" aria-label="Remove">×</button></li>`).join("")
+    : `<li class="empty" style="background:none">None yet</li>`;
+  $("sched-dot").hidden = !s.schedules.length;
 
+  $("pill").textContent = `🔥 ${s.score}`;
   $("score").textContent = s.score;
   $("label").textContent = s.label;
   $("arc").style.stroke = colorFor(s.score);
-  $("arc").style.strokeDashoffset = 326.7 * (1 - s.score / 100);
-  const b = s.breakdown, p = b.penalties;
-  $("breakdown").innerHTML = `
-    <div><span>Opened something blocked</span><b>${b.attempts}×</b></div>
-    <div><span>Stopped focus early</span><b>${b.skips}×</b></div>
-    <div><span>Minutes on distractions</span><b>${b.minutes}</b></div>`;
+  $("arc").style.strokeDashoffset = 314.2 * (1 - s.score / 100);
+  const b = s.breakdown;
+  $("breakdown").textContent = `${b.attempts} tries · ${b.skips} stops · ${b.minutes} min distracted`;
   $("history").innerHTML = s.history.map((d) => `
     <div class="bar" title="${d.date}: ${d.score}">
-      <span class="v">${d.score}</span>
-      <div class="fill" style="height:${Math.max(2, d.score)}%;background:${colorFor(d.score)}"></div>
-      <span class="d">${d.day}</span>
+      <div class="f" style="height:${Math.max(4, d.score)}%;background:${colorFor(d.score)}"></div><span>${d.day[0]}</span>
     </div>`).join("");
 }
 
 function renderDays() {
   $("days").innerHTML = DAY_KEYS.map((k, i) =>
-    `<button class="day" data-day="${k}" aria-pressed="${pickedDays.has(k)}" title="${DAY_NAMES[i]}">${DAY_SHORT[i]}</button>`).join("");
+    `<button class="day" data-day="${k}" aria-pressed="${pickedDays.has(k)}">${DAY_SHORT[i]}</button>`).join("");
 }
 
 async function call(path, body, errorEl) {
@@ -247,20 +310,16 @@ async function call(path, body, errorEl) {
   if (!data.error) render(data);
   return !data.error;
 }
+async function refresh() { try { render(await (await fetch("/api/state")).json()); } catch (e) {} }
 
-async function refresh() {
-  try { render(await (await fetch("/api/state")).json()); } catch (e) {}
-}
-
-$("picks").addEventListener("click", (e) => {
-  const btn = e.target.closest(".pick");
-  if (!btn) return;
-  const body = { kind: btn.dataset.kind, value: btn.dataset.value };
-  call(btn.dataset.on === "true" ? "/api/unblock" : "/api/block", body, "add-error");
+$("tiles").addEventListener("click", (e) => {
+  const t = e.target.closest(".tile");
+  if (!t || t.classList.contains("add")) return;
+  call(t.dataset.on === "true" ? "/api/unblock" : "/api/block", { kind: t.dataset.kind, value: t.dataset.value }, "add-error");
 });
 $("add-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  if (await call("/api/block", { name: $("add-name").value }, "add-error")) $("add-name").value = "";
+  if (await call("/api/block", { name: $("add-name").value }, "add-error")) { $("add-name").value = ""; $("add-form").classList.remove("open"); }
 });
 $("days").addEventListener("click", (e) => {
   const k = e.target.dataset.day;
@@ -268,20 +327,30 @@ $("days").addEventListener("click", (e) => {
   pickedDays.has(k) ? pickedDays.delete(k) : pickedDays.add(k);
   renderDays();
 });
-$("add-schedule").addEventListener("click", () =>
-  call("/api/schedules/add", { days: [...pickedDays], start: $("start").value, end: $("end").value }, "schedule-error"));
+$("add-schedule").onclick = () =>
+  call("/api/schedules/add", { days: [...pickedDays], start: $("start").value, end: $("end").value }, "schedule-error");
 $("schedules").addEventListener("click", (e) => {
-  if (e.target.dataset.remove) call("/api/schedules/remove", { number: e.target.dataset.remove });
+  const b = e.target.closest("[data-remove]");
+  if (b) call("/api/schedules/remove", { number: b.dataset.remove });
 });
 
 setInterval(() => {
   if (S && S.session.active && secondsLeft > 0) {
     secondsLeft -= 1;
-    const t = $("timer");
-    if (t) t.textContent = fmt(secondsLeft);
+    if ($("timer")) $("timer").textContent = fmt(secondsLeft);
+    const p = $("prog");
+    if (p) { const C = 2 * Math.PI * 92; p.setAttribute("stroke-dashoffset", C * (1 - secondsLeft / sessionTotal())); }
     if (secondsLeft === 0) refresh();
   }
 }, 1000);
+
+function showTab(name) {
+  document.querySelectorAll("[role=tab]").forEach((t) => t.setAttribute("aria-selected", t.dataset.tab === name));
+  document.querySelectorAll("[role=tabpanel]").forEach((p) => p.hidden = p.id !== "tab-" + name);
+  store.set("tab", name);
+}
+document.querySelectorAll("[role=tab]").forEach((t) => t.onclick = () => showTab(t.dataset.tab));
+showTab(["focus", "schedule", "stats"].includes(store.get("tab")) ? store.get("tab") : "focus");
 
 renderDays();
 refresh();
