@@ -8,7 +8,7 @@ Blockapp blocks the apps you can't stop opening, on Windows.
 
 ## Status
 
-Steps 1 to 3 of 4 are done: the project skeleton, app blocking and scheduled focus sessions. The Focus Score comes next.
+All 4 steps are done: app blocking, scheduled focus sessions and the Focus Score. An iPhone version is planned next.
 
 ## Setup (Windows)
 
@@ -61,3 +61,18 @@ python -m blockapp skip          # end the current scheduled session early
 
 `--days` takes `weekdays`, `weekends`, `everyday`, a range like `mon-fri`, or a list like `mon,wed,fri`. Times are 24-hour. Windows that cross midnight (like `22:00` to `06:00`) work too.
 Changes to your block list or schedules apply right away, with no restart needed. `startup off` turns automatic start off again.
+
+## Focus Score
+
+```powershell
+python -m blockapp score            # today's score and what cost you points
+python -m blockapp score --days 7   # your last week
+```
+
+Every day starts at 100. You lose points for:
+
+- each time you open a blocked app during a focus session: 5 points (up to 40)
+- each session you end early with `skip`: 10 points (up to 20)
+- each minute you spend in your distracting apps outside sessions: 0.5 points (up to 40)
+
+Distracted time is counted while `blockapp run` (or `startup on`) is running, using the app in the front window.

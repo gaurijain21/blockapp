@@ -64,9 +64,19 @@ def run_scheduler(on_change: Callable[[str], None] | None = None, stop_after: fl
     from blockapp.schedule import current_session_end, is_skipped
     from blockapp.storage import load_config
 
+    from blockapp.usage import distracting_app_in_use
+
     started = time.monotonic()
     in_session = False
     seen: set = set()
+    usage: dict[str, float] = {}
+    last_flush = time.monotonic()
+
+    def flush_usage() -> None:
+        for app, secs in usage.items():
+            log_event("usage", app=app, seconds=round(secs))
+        usage.clear()
+
     while stop_after is None or time.monotonic() - started < stop_after:
         now = datetime.now()
         config = load_config()
@@ -87,6 +97,14 @@ def run_scheduler(on_change: Callable[[str], None] | None = None, stop_after: fl
                 log_event("blocked", app=name)
                 if on_change:
                     on_change(f"Closed {name}")
+        else:
+            app = distracting_app_in_use(config["blocked_apps"])
+            if app:
+                usage[app] = usage.get(app, 0) + CHECK_EVERY_SECONDS
+        if time.monotonic() - last_flush >= 60:
+            flush_usage()
+            last_flush = time.monotonic()
         time.sleep(CHECK_EVERY_SECONDS)
+    flush_usage()
     if in_session:
         log_event("session_end", scheduled=True)

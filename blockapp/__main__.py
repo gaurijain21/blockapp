@@ -8,7 +8,7 @@ from datetime import datetime
 
 from blockapp import __version__
 from blockapp import apps
-from blockapp import schedule, startup
+from blockapp import schedule, score, startup
 from blockapp.blocker import run_blocking, run_scheduler
 
 
@@ -123,6 +123,15 @@ def cmd_startup(args) -> int:
     return 0
 
 
+def cmd_score(args) -> int:
+    events = score.load_events()
+    if args.days > 1:
+        print(score.report_history(score.daily_stats(events, score.last_days(args.days))))
+    else:
+        print(score.report_today(score.daily_stats(events, score.last_days(1))[0]))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="blockapp", description="Block the apps you can't stop opening.")
     parser.add_argument("--version", action="version", version=f"Blockapp {__version__}")
@@ -157,6 +166,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("startup", help="start Blockapp automatically when you sign in to Windows")
     p.add_argument("state", choices=["on", "off"])
     p.set_defaults(func=cmd_startup)
+    p = sub.add_parser("score", help="show your Focus Score")
+    p.add_argument("--days", type=int, default=1, help="show a history, e.g. --days 7")
+    p.set_defaults(func=cmd_score)
     return parser
 
 

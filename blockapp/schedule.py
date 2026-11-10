@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, time, timedelta
 
-from blockapp.storage import load_config, save_config
+from blockapp.storage import load_config, log_event, save_config
 
 DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 DAY_GROUPS = {"weekdays": DAYS[:5], "weekends": DAYS[5:], "everyday": DAYS, "daily": DAYS}
@@ -105,6 +105,7 @@ def skip_current(now: datetime | None = None) -> datetime | None:
         config = load_config()
         config["skip_until"] = end.isoformat(timespec="seconds")
         save_config(config)
+        log_event("skip", until=config["skip_until"])
     return end
 
 
