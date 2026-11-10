@@ -1,7 +1,7 @@
 """A small dashboard in your browser: python -m blockapp dashboard
 
 Uses only Python's standard library. Listens on 127.0.0.1, so only your own
-computer can open it. While it's open, it also follows your schedules
+computer can open it. While it's open, it also does the blocking
 (the same as `blockapp run`)."""
 
 from __future__ import annotations
@@ -14,7 +14,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib import resources
 
 from blockapp import apps, schedule, score
+from blockapp.catalog import APPS, SITES, SUGGESTIONS, app_label, site_label
 from blockapp.storage import load_config
+
+
+def _clock(t: datetime) -> str:
+    return t.strftime("%I:%M %p").lstrip("0")
 
 
 def state() -> dict:
@@ -25,7 +30,20 @@ def state() -> dict:
     history = score.daily_stats(events, score.last_days(7))
     end = schedule.session_end(now, config)
     active = end is not None and not schedule.is_skipped(now, config)
-    apps_today = sorted(
+    entries = config.get("schedules", [])
+    nxt = schedule.next_start(now, entries)
+
+    blocked = [{"kind": "site", "value": k, "label": site_label(k)} for k in config["blocked_sites"]]
+    blocked += [{"kind": "app", "value": a, "label": app_label(a)} for a in config["blocked_apps"]]
+    blocked_keys = {(b["kind"], b["value"]) for b in blocked}
+    suggestions = []
+    for kind, key in SUGGESTIONS:
+        value = key if kind == "site" else APPS[key][1]
+        label = SITES[key] if kind == "site" else APPS[key][0]
+        suggestions.append({"kind": kind, "value": value, "label": label, "on": (kind, value) in blocked_keys})
+    suggested = {(s["kind"], s["value"]) for s in suggestions}
+
+    names = sorted(
         set(today.by_app) | set(today.attempts_by_app),
         key=lambda a: -(today.by_app.get(a, 0) / 60 + today.attempts_by_app.get(a, 0)),
     )
@@ -39,14 +57,23 @@ def state() -> dict:
             "penalties": {k: round(v) for k, v in today.penalties.items()},
         },
         "distractions": [
-            {"app": a, "minutes": round(today.by_app.get(a, 0) / 60), "opens": today.attempts_by_app.get(a, 0)}
-            for a in apps_today[:5]
+            {"name": n, "minutes": round(today.by_app.get(n, 0) / 60), "opens": today.attempts_by_app.get(n, 0)}
+            for n in names[:5]
         ],
         "history": [{"day": s.day.strftime("%a"), "date": s.day.isoformat(), "score": s.score} for s in history],
-        "blocked": config["blocked_apps"],
-        "schedules": [schedule.describe(s) for s in config.get("schedules", [])],
-        "session": {"active": active, "until": end.strftime("%H:%M") if active else None},
-        "running": [a for a in apps.running_apps() if apps.normalize(a) not in config["blocked_apps"]],
+        "blocked": blocked,
+        "suggestions": suggestions,
+        "custom": [b for b in blocked if (b["kind"], b["value"]) not in suggested],
+        "schedules": [
+            {"number": i, "text": schedule.describe(e)} for i, e in enumerate(entries, 1)
+        ],
+        "session": {
+            "active": active,
+            "until": _clock(end) if active else None,
+            "seconds_left": int((end - now).total_seconds()) if active else 0,
+        },
+        "next": schedule.friendly_when(nxt, now) if nxt and not active else None,
+        "running": sorted({app_label(a) for a in apps.running_apps()}),
     }
 
 
@@ -82,12 +109,17 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length") or 0)
         try:
             body = json.loads(self.rfile.read(length) or b"{}")
-            if self.path == "/api/apps/add":
-                apps.add_app(body.get("name", ""))
-            elif self.path == "/api/apps/remove":
-                apps.remove_app(body.get("name", ""))
+            if self.path == "/api/block":
+                if body.get("kind") == "site":
+                    apps.add_item(body["value"])
+                elif body.get("kind") == "app":
+                    apps.add_app(body["value"])
+                else:
+                    apps.add_item(body.get("name", ""))
+            elif self.path == "/api/unblock":
+                apps.remove_item(body.get("kind", ""), body.get("value", ""))
             elif self.path == "/api/schedules/add":
-                schedule.add_schedule(body.get("days", "weekdays"), body.get("start", ""), body.get("end", ""))
+                schedule.add_schedule(body.get("days") or [], body.get("start", ""), body.get("end", ""))
             elif self.path == "/api/schedules/remove":
                 schedule.remove_schedule(int(body.get("number", 0)))
             elif self.path == "/api/focus":
@@ -107,7 +139,7 @@ def serve(port: int = 8765, open_browser: bool = True, follow_schedules: bool = 
         threading.Thread(target=run_scheduler, daemon=True).start()
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     url = f"http://localhost:{port}"
-    print(f"Blockapp dashboard: {url}  (press Ctrl+C to stop)")
+    print(f"Blockapp dashboard: {url}  (keep this window open; Ctrl+C stops it)")
     if open_browser:
         webbrowser.open(url)
     try:

@@ -58,6 +58,31 @@ def add_app(name: str) -> str:
     return app
 
 
+def add_item(text: str) -> tuple[str, str]:
+    """Block an app or a website, whichever the text means. Returns (kind, label)."""
+    from blockapp.catalog import app_label, classify, site_label
+
+    kind, value = classify(text)
+    if kind == "app":
+        return "app", app_label(add_app(value))
+    config = load_config()
+    if value not in config["blocked_sites"]:
+        config["blocked_sites"].append(value)
+        save_config(config)
+    return "site", site_label(value)
+
+
+def remove_item(kind: str, value: str) -> bool:
+    if kind == "site":
+        config = load_config()
+        if value in config["blocked_sites"]:
+            config["blocked_sites"].remove(value)
+            save_config(config)
+            return True
+        return False
+    return remove_app(value)
+
+
 def remove_app(name: str) -> bool:
     app = normalize(name)
     config = load_config()

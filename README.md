@@ -1,6 +1,6 @@
 # Blockapp
 
-Blockapp blocks the apps you can't stop opening, on Windows.
+Blockapp blocks the apps and websites you can't stop opening, on Windows.
 
 - Pick the apps that steal your time
 - Schedule focus sessions that lock them
@@ -37,7 +37,7 @@ python -m pytest
 
 ```powershell
 python -m blockapp running            # see what's open, to find app names
-python -m blockapp add discord chrome # block apps (".exe" is optional)
+python -m blockapp add youtube discord # block websites or apps
 python -m blockapp list               # your block list
 python -m blockapp remove chrome      # unblock one
 python -m blockapp block --minutes 25 # block for 25 minutes (leave out --minutes to block until Ctrl+C)
@@ -77,11 +77,18 @@ Every day starts at 100. You lose points for:
 
 Distracted time is counted while `blockapp run` (or `startup on`) is running, using the app in the front window.
 
-## Dashboard
+## Dashboard (easiest)
 
 ```powershell
 python -m blockapp dashboard
 ```
+
+1. Under **What distracts you?**, tap things like YouTube or Discord, or type your own.
+2. Pick 25, 50 or 90 minutes and press **Start focus**.
+3. Optionally, under **Automatic focus**, pick days and times so focus turns on by itself.
+
+Websites (YouTube, Instagram, TikTok and others) are blocked by closing their tab in Chrome, Edge, Firefox, Brave, Opera or Vivaldi when you look at it.
+Apps (Discord, Steam and others) are closed completely.
 
 This opens http://localhost:8765 in your browser. There you can start a 25, 50 or 90 minute focus session right away, see your Focus Score and the last 7 days, block and unblock apps, add or remove focus sessions, and end a session early.
 While the dashboard is open, it also follows your schedules, so you don't need `run` as well. It only uses Python's standard library, so it doesn't install anything extra.

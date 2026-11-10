@@ -41,7 +41,10 @@ def add_schedule(days: str, start: str, end: str) -> dict:
     s, e = parse_time(start), parse_time(end)
     if s == e:
         raise ValueError("Start and end can't be the same time.")
-    entry = {"days": parse_days(days), "start": s.strftime("%H:%M"), "end": e.strftime("%H:%M")}
+    day_list = parse_days(days) if isinstance(days, str) else [d for d in DAYS if d in days]
+    if not day_list:
+        raise ValueError("Pick at least one day.")
+    entry = {"days": day_list, "start": s.strftime("%H:%M"), "end": e.strftime("%H:%M")}
     config = load_config()
     config.setdefault("schedules", []).append(entry)
     save_config(config)
@@ -62,17 +65,28 @@ def remove_schedule(number: int) -> dict:
     return removed
 
 
-def describe(entry: dict) -> str:
-    days = entry["days"]
+def _clock(hhmm: str) -> str:
+    t = parse_time(hhmm)
+    return t.strftime("%I:%M %p").lstrip("0")
+
+
+def days_label(days: list[str]) -> str:
     if days == DAYS[:5]:
         label = "Weekdays"
+    elif len(days) == 1:
+        label = {"mon": "Mondays", "tue": "Tuesdays", "wed": "Wednesdays", "thu": "Thursdays",
+                 "fri": "Fridays", "sat": "Saturdays", "sun": "Sundays"}[days[0]]
     elif days == DAYS:
         label = "Every day"
     elif days == DAYS[5:]:
         label = "Weekends"
     else:
         label = ", ".join(d.capitalize() for d in days)
-    return f"{label} {entry['start']}-{entry['end']}"
+    return label
+
+
+def describe(entry: dict) -> str:
+    return f"{days_label(entry['days'])}, {_clock(entry['start'])} to {_clock(entry['end'])}"
 
 
 def active_until(entry: dict, now: datetime) -> datetime | None:
@@ -140,3 +154,31 @@ def skip_current(now: datetime | None = None) -> datetime | None:
 def is_skipped(now: datetime, config: dict) -> bool:
     skip = config.get("skip_until")
     return bool(skip) and now < datetime.fromisoformat(skip)
+
+
+def next_start(now: datetime, entries: list[dict]) -> datetime | None:
+    """When the next automatic focus time begins, looking a week ahead."""
+    best = None
+    for entry in entries:
+        s = parse_time(entry["start"])
+        for offset in range(8):
+            day = (now + timedelta(days=offset)).date()
+            if DAYS[day.weekday()] not in entry["days"]:
+                continue
+            start = datetime.combine(day, s)
+            if start > now:
+                if best is None or start < best:
+                    best = start
+                break
+    return best
+
+
+def friendly_when(when: datetime, now: datetime) -> str:
+    """'today at 9:00 AM', 'tomorrow at 9:00 AM', 'Thursday at 9:00 AM'."""
+    clock = when.strftime("%I:%M %p").lstrip("0")
+    delta = (when.date() - now.date()).days
+    if delta == 0:
+        return f"today at {clock}"
+    if delta == 1:
+        return f"tomorrow at {clock}"
+    return f"{when:%A} at {clock}"

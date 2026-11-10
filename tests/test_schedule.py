@@ -38,7 +38,7 @@ def test_overnight_window():
 
 def test_add_list_remove_and_skip():
     schedule.add_schedule("mon", "09:00", "12:00")
-    assert schedule.describe(schedule.schedules()[0]) == "Mon 09:00-12:00"
+    assert schedule.describe(schedule.schedules()[0]) == "Mondays, 9:00 AM to 12:00 PM"
     assert schedule.skip_current(MON_10) == datetime(2026, 11, 9, 12, 0)
     from blockapp.storage import load_config
     assert schedule.is_skipped(MON_10, load_config())

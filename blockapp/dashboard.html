@@ -7,134 +7,142 @@
 <style>
   :root {
     --bg: #f6f5f2; --card: #ffffff; --ink: #1d1d1f; --muted: #6e6e73; --line: #e6e4df;
-    --accent: #3d5afe; --good: #1f9d55; --warn: #d97706; --bad: #dc2626; --chip: #f0efeb;
+    --accent: #3d5afe; --accent-ink: #ffffff; --accent-soft: #e8ecff;
+    --good: #1f9d55; --warn: #d97706; --bad: #dc2626; --chip: #f0efeb;
   }
   @media (prefers-color-scheme: dark) {
     :root { --bg: #141416; --card: #1d1d20; --ink: #f2f2f4; --muted: #9a9aa2; --line: #2c2c31;
-            --accent: #7b8cff; --good: #3ecf7a; --warn: #f5a524; --bad: #f87171; --chip: #26262b; }
+            --accent: #7b8cff; --accent-ink: #0f1020; --accent-soft: #262a45;
+            --good: #3ecf7a; --warn: #f5a524; --bad: #f87171; --chip: #26262b; }
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 960px; margin: 0 auto; padding: 28px 16px 48px; }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-  h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 14px; font-weight: 600; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
-  .wide { grid-column: 1 / -1; }
-  .status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
-            background: var(--chip); font-size: 14px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
-  .status.on .dot { background: var(--good); }
-  .score-wrap { display: flex; align-items: center; gap: 24px; }
-  .score-wrap > div:last-child { flex: 1; }
-  .ring { position: relative; width: 120px; height: 120px; flex: none; }
-  .ring svg { transform: rotate(-90deg); }
-  .ring .num { position: absolute; inset: 0; display: grid; place-items: center; font-size: 34px; font-weight: 700; }
-  .label { font-size: 18px; font-weight: 600; }
-  .rows { margin-top: 6px; color: var(--muted); font-size: 14px; }
-  .rows div { display: flex; justify-content: space-between; gap: 16px; padding: 3px 0; }
-  .rows b { color: var(--ink); font-weight: 600; }
-  .bars { display: flex; align-items: flex-end; gap: 10px; height: 140px; }
-  .bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
-  .bar .fill { width: 100%; max-width: 44px; border-radius: 6px 6px 3px 3px; background: var(--accent); min-height: 3px; }
-  .bar .v { font-size: 12px; color: var(--muted); }
-  .bar .d { font-size: 12px; color: var(--muted); }
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 880px; margin: 0 auto; padding: 24px 16px 56px; }
+  h1 { font-size: 20px; margin: 0 0 18px; letter-spacing: -0.01em; }
+  h2 { font-size: 17px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 16px; }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; }
+  .row .card { margin-bottom: 0; }
+  .row + .card, .row + .row { margin-top: 16px; }
+
+  /* Focus hero */
+  .hero { text-align: center; padding: 34px 22px; }
+  .hero .big { font-size: 28px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .hero .timer { font-size: 64px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; line-height: 1.1; margin: 4px 0; }
+  .hero.on { background: var(--accent-soft); border-color: transparent; }
+  .lengths { display: inline-flex; background: var(--chip); border-radius: 999px; padding: 4px; margin: 14px 0 18px; }
+  .lengths button { border: 0; background: transparent; color: var(--ink); font: inherit; padding: 7px 16px; border-radius: 999px; cursor: pointer; }
+  .lengths button[aria-pressed="true"] { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.12); font-weight: 600; }
+  .btn { font: inherit; border: 0; border-radius: 10px; padding: 9px 16px; background: var(--accent); color: var(--accent-ink); cursor: pointer; font-weight: 600; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.big { font-size: 17px; padding: 13px 34px; border-radius: 12px; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .blocking-line { color: var(--muted); font-size: 14px; margin-top: 14px; }
+  .blocking-line b { color: var(--ink); font-weight: 600; }
+
+  /* Pick distractions */
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--chip); border-radius: 999px; padding: 5px 6px 5px 12px; font-size: 14px; }
-  .chip button { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px; }
-  .chip button:hover { color: var(--bad); }
-  .empty { color: var(--muted); font-size: 14px; }
-  form { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-  input, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-width: 0; }
-  input[type=text] { flex: 1 1 140px; }
-  .btn { font: inherit; border: 0; border-radius: 8px; padding: 7px 14px; background: var(--accent); color: #fff; cursor: pointer; font-weight: 600; }
-  .btn.ghost { background: var(--chip); color: var(--ink); }
-  .list { list-style: none; padding: 0; margin: 0; }
-  .list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
-  .list li:last-child { border-bottom: 0; }
-  .list button { border: 0; background: transparent; color: var(--muted); cursor: pointer; }
-  .list button:hover { color: var(--bad); }
+  .pick { font: inherit; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--card);
+          color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .pick[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .pick .tag { font-size: 11px; opacity: .7; }
+  .pick .x { font-size: 15px; line-height: 1; margin-left: 2px; }
+  form.inline { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  input, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-width: 0; }
+  input[type=text] { flex: 1 1 200px; }
+  .note { color: var(--muted); font-size: 13px; margin-top: 10px; }
   .error { color: var(--bad); font-size: 13px; margin-top: 8px; min-height: 1em; }
-  #focus-now { display: inline-flex; gap: 8px; }
-  #focus-now[hidden] { display: none; }
-  .hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+
+  /* Automatic focus */
+  .list { list-style: none; padding: 0; margin: 0 0 6px; }
+  .list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .list li:last-child { border-bottom: 0; }
+  .link { border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: 14px; }
+  .link:hover { color: var(--bad); }
+  .days { display: flex; gap: 6px; flex-wrap: wrap; }
+  .day { font: inherit; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; font-weight: 600; font-size: 13px; }
+  .day[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .times { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 14px; padding: 4px 0 10px; }
+
+  /* Score */
+  .score-wrap { display: flex; align-items: center; gap: 22px; }
+  .ring { position: relative; width: 110px; height: 110px; flex: none; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring .num { position: absolute; inset: 0; display: grid; place-items: center; font-size: 32px; font-weight: 700; }
+  .label { font-size: 17px; font-weight: 600; }
+  .rows { margin-top: 4px; color: var(--muted); font-size: 14px; }
+  .rows div { display: flex; justify-content: space-between; gap: 14px; padding: 2px 0; }
+  .rows b { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-top: 6px; }
+  .bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar .fill { width: 100%; max-width: 36px; border-radius: 6px 6px 3px 3px; min-height: 3px; }
+  .bar .v, .bar .d { font-size: 12px; color: var(--muted); }
+  details { margin-top: 12px; color: var(--muted); font-size: 13px; }
+  summary { cursor: pointer; }
 </style>
 </head>
 <body>
 <main>
-  <header>
-    <h1>Blockapp</h1>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span class="status" id="status"><span class="dot"></span><span id="status-text">Loading…</span></span>
-      <span id="focus-now">
-        <select id="focus-minutes" aria-label="Focus length">
-          <option value="25">25 min</option>
-          <option value="50">50 min</option>
-          <option value="90">90 min</option>
-        </select>
-        <button class="btn" id="focus-start">Start focus now</button>
-      </span>
-      <button class="btn ghost" id="skip" hidden>End session early</button>
-    </div>
-  </header>
+  <h1>Blockapp</h1>
 
-  <div class="grid">
+  <!-- 1. Focus -->
+  <section class="card hero" id="hero"></section>
+
+  <!-- 2. What to block -->
+  <section class="card">
+    <h2>What distracts you?</h2>
+    <p class="sub">Tap to block it during focus. Websites get their tab closed, and apps get closed completely.</p>
+    <div class="chips" id="picks"></div>
+    <form class="inline" id="add-form">
+      <input type="text" id="add-name" list="running" placeholder="Something else? Type an app or website, like notepad or x.com" autocomplete="off">
+      <datalist id="running"></datalist>
+      <button class="btn">Add</button>
+    </form>
+    <div class="error" id="add-error"></div>
+  </section>
+
+  <div class="row">
+    <!-- 3. Automatic focus -->
     <section class="card">
-      <h2>Focus Score today</h2>
+      <h2>Automatic focus</h2>
+      <p class="sub">Focus turns on by itself at these times, so you don't have to remember.</p>
+      <ul class="list" id="schedules"></ul>
+      <div class="days" id="days"></div>
+      <div class="times">
+        from <input type="time" id="start" value="09:00"> to <input type="time" id="end" value="12:00">
+        <button class="btn" id="add-schedule">Add</button>
+      </div>
+      <div class="error" id="schedule-error"></div>
+    </section>
+
+    <!-- 4. Score -->
+    <section class="card">
+      <h2>Focus Score</h2>
+      <p class="sub">How focused you were today, out of 100.</p>
       <div class="score-wrap">
         <div class="ring">
-          <svg width="120" height="120" viewBox="0 0 120 120">
+          <svg width="110" height="110" viewBox="0 0 120 120">
             <circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="12"/>
             <circle id="arc" cx="60" cy="60" r="52" fill="none" stroke="var(--good)" stroke-width="12"
                     stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
           </svg>
           <div class="num" id="score">–</div>
         </div>
-        <div>
+        <div style="flex:1">
           <div class="label" id="label"></div>
           <div class="rows" id="breakdown"></div>
         </div>
       </div>
-    </section>
-
-    <section class="card">
-      <h2>Last 7 days</h2>
       <div class="bars" id="history"></div>
-    </section>
-
-    <section class="card">
-      <h2>Blocked apps</h2>
-      <div class="chips" id="blocked"></div>
-      <form id="add-app">
-        <input type="text" id="app-name" list="running" placeholder="App name, e.g. discord" autocomplete="off">
-        <datalist id="running"></datalist>
-        <button class="btn">Block</button>
-      </form>
-      <div class="error" id="app-error"></div>
-    </section>
-
-    <section class="card">
-      <h2>Focus sessions</h2>
-      <ul class="list" id="schedules"></ul>
-      <form id="add-schedule">
-        <select id="days">
-          <option value="weekdays">Weekdays</option>
-          <option value="everyday">Every day</option>
-          <option value="weekends">Weekends</option>
-        </select>
-        <input type="time" id="start" value="09:00" required>
-        <input type="time" id="end" value="12:00" required>
-        <button class="btn">Add</button>
-      </form>
-      <div class="error" id="schedule-error"></div>
-    </section>
-
-    <section class="card wide">
-      <h2>Biggest distractions today</h2>
-      <ul class="list" id="distractions"></ul>
-      <p class="hint">Distracted time is counted while this dashboard (or <code>blockapp run</code>) is open.</p>
+      <details>
+        <summary>How is it worked out?</summary>
+        Every day starts at 100. You lose 5 points each time you open something blocked during focus (up to 40),
+        10 for stopping focus early (up to 20), and half a point for every minute you spend on your distractions
+        outside focus (up to 40).
+      </details>
     </section>
   </div>
 </main>
@@ -142,47 +150,94 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const colorFor = (s) => (s >= 70 ? "var(--good)" : s >= 50 ? "var(--warn)" : "var(--bad)");
 
-function colorFor(score) {
-  return score >= 70 ? "var(--good)" : score >= 50 ? "var(--warn)" : "var(--bad)";
+let S = null;
+let minutes = 25;
+let secondsLeft = 0;
+const DAY_KEYS = ["mon","tue","wed","thu","fri","sat","sun"];
+const DAY_SHORT = ["M","T","W","T","F","S","S"];
+const DAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const pickedDays = new Set(["mon","tue","wed","thu","fri"]);
+
+function fmt(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s).padStart(2, "0");
+}
+
+function listNames(items) {
+  const names = items.map((b) => b.label);
+  if (names.length <= 3) return names.join(", ");
+  return names.slice(0, 3).join(", ") + ` and ${names.length - 3} more`;
+}
+
+function renderHero() {
+  const hero = $("hero");
+  const nothing = S.blocked.length === 0;
+  if (S.session.active) {
+    hero.classList.add("on");
+    hero.innerHTML = `
+      <p class="big">Focus is on</p>
+      <div class="timer" id="timer">${fmt(secondsLeft)}</div>
+      <p class="sub" style="margin:0 0 18px">left, until ${esc(S.session.until)}</p>
+      <button class="btn ghost" id="stop">Stop early</button>
+      <p class="blocking-line">${nothing ? "Nothing is blocked yet. Pick some distractions below."
+        : `Blocking <b>${esc(listNames(S.blocked))}</b>`}</p>`;
+    $("stop").onclick = () => {
+      if (confirm("Stop focus early? This takes 10 points off today's Focus Score.")) call("/api/skip");
+    };
+  } else {
+    hero.classList.remove("on");
+    hero.innerHTML = `
+      <p class="big">Ready to focus?</p>
+      <div class="lengths" role="group" aria-label="How long">
+        ${[25, 50, 90].map((m) => `<button data-min="${m}" aria-pressed="${m === minutes}">${m} min</button>`).join("")}
+      </div><br>
+      <button class="btn big" id="go" ${nothing ? "disabled" : ""}>Start focus</button>
+      <p class="blocking-line">${nothing ? "First, pick what distracts you below."
+        : `Blocks <b>${esc(listNames(S.blocked))}</b>`}
+        ${S.next ? `<br>Next automatic focus: <b>${esc(S.next)}</b>` : ""}</p>`;
+    hero.querySelectorAll("[data-min]").forEach((b) => b.onclick = () => { minutes = +b.dataset.min; renderHero(); });
+    $("go").onclick = () => call("/api/focus", { minutes });
+  }
 }
 
 function render(s) {
-  $("status").classList.toggle("on", s.session.active);
-  $("status-text").textContent = s.session.active ? `Focus session on until ${s.session.until}` : "No focus session right now";
-  $("skip").hidden = !s.session.active;
-  $("focus-now").hidden = s.session.active;
+  S = s;
+  secondsLeft = s.session.seconds_left;
+  renderHero();
+
+  const chip = (b, removable) => `
+    <button class="pick" aria-pressed="${removable || b.on}" data-kind="${b.kind}" data-value="${esc(b.value)}" data-on="${removable || b.on}">
+      ${esc(b.label)} <span class="tag">${b.kind === "site" ? "website" : "app"}</span>${removable ? '<span class="x">×</span>' : ""}
+    </button>`;
+  $("picks").innerHTML = s.suggestions.map((b) => chip(b, false)).join("") + s.custom.map((b) => chip(b, true)).join("");
+  $("running").innerHTML = s.running.map((a) => `<option value="${esc(a)}">`).join("");
+
+  $("schedules").innerHTML = s.schedules.length
+    ? s.schedules.map((x) => `<li><span>${esc(x.text)}</span><button class="link" data-remove="${x.number}">Remove</button></li>`).join("")
+    : `<li class="empty">No automatic focus times yet. Pick days and times below.</li>`;
 
   $("score").textContent = s.score;
   $("label").textContent = s.label;
-  const arc = $("arc");
-  arc.style.stroke = colorFor(s.score);
-  arc.style.strokeDashoffset = 326.7 * (1 - s.score / 100);
+  $("arc").style.stroke = colorFor(s.score);
+  $("arc").style.strokeDashoffset = 326.7 * (1 - s.score / 100);
   const b = s.breakdown, p = b.penalties;
   $("breakdown").innerHTML = `
-    <div><span>Blocked app opens</span><b>${b.attempts} (−${p.attempts})</b></div>
-    <div><span>Sessions ended early</span><b>${b.skips} (−${p.skips})</b></div>
-    <div><span>Distracted minutes</span><b>${b.minutes} (−${p.time})</b></div>`;
-
+    <div><span>Opened something blocked</span><b>${b.attempts}×</b></div>
+    <div><span>Stopped focus early</span><b>${b.skips}×</b></div>
+    <div><span>Minutes on distractions</span><b>${b.minutes}</b></div>`;
   $("history").innerHTML = s.history.map((d) => `
     <div class="bar" title="${d.date}: ${d.score}">
       <span class="v">${d.score}</span>
       <div class="fill" style="height:${Math.max(2, d.score)}%;background:${colorFor(d.score)}"></div>
       <span class="d">${d.day}</span>
     </div>`).join("");
+}
 
-  $("blocked").innerHTML = s.blocked.length
-    ? s.blocked.map((a) => `<span class="chip">${esc(a)}<button data-remove-app="${esc(a)}" aria-label="Unblock ${esc(a)}">×</button></span>`).join("")
-    : `<span class="empty">No apps blocked yet.</span>`;
-  $("running").innerHTML = s.running.map((a) => `<option value="${esc(a)}">`).join("");
-
-  $("schedules").innerHTML = s.schedules.length
-    ? s.schedules.map((d, i) => `<li><span>${esc(d)}</span><button data-remove-schedule="${i + 1}">Remove</button></li>`).join("")
-    : `<li class="empty">No sessions scheduled yet.</li>`;
-
-  $("distractions").innerHTML = s.distractions.length
-    ? s.distractions.map((d) => `<li><span>${esc(d.app)}</span><span>${d.minutes} min · ${d.opens} blocked ${d.opens === 1 ? "open" : "opens"}</span></li>`).join("")
-    : `<li class="empty">Nothing yet today. Nice.</li>`;
+function renderDays() {
+  $("days").innerHTML = DAY_KEYS.map((k, i) =>
+    `<button class="day" data-day="${k}" aria-pressed="${pickedDays.has(k)}" title="${DAY_NAMES[i]}">${DAY_SHORT[i]}</button>`).join("");
 }
 
 async function call(path, body, errorEl) {
@@ -197,22 +252,38 @@ async function refresh() {
   try { render(await (await fetch("/api/state")).json()); } catch (e) {}
 }
 
-$("add-app").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  if (await call("/api/apps/add", { name: $("app-name").value }, "app-error")) $("app-name").value = "";
+$("picks").addEventListener("click", (e) => {
+  const btn = e.target.closest(".pick");
+  if (!btn) return;
+  const body = { kind: btn.dataset.kind, value: btn.dataset.value };
+  call(btn.dataset.on === "true" ? "/api/unblock" : "/api/block", body, "add-error");
 });
-$("add-schedule").addEventListener("submit", (e) => {
+$("add-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  call("/api/schedules/add", { days: $("days").value, start: $("start").value, end: $("end").value }, "schedule-error");
+  if (await call("/api/block", { name: $("add-name").value }, "add-error")) $("add-name").value = "";
 });
-$("skip").addEventListener("click", () => call("/api/skip"));
-$("focus-start").addEventListener("click", () => call("/api/focus", { minutes: $("focus-minutes").value }));
-document.addEventListener("click", (e) => {
-  const app = e.target.dataset.removeApp, sched = e.target.dataset.removeSchedule;
-  if (app) call("/api/apps/remove", { name: app });
-  if (sched) call("/api/schedules/remove", { number: sched });
+$("days").addEventListener("click", (e) => {
+  const k = e.target.dataset.day;
+  if (!k) return;
+  pickedDays.has(k) ? pickedDays.delete(k) : pickedDays.add(k);
+  renderDays();
+});
+$("add-schedule").addEventListener("click", () =>
+  call("/api/schedules/add", { days: [...pickedDays], start: $("start").value, end: $("end").value }, "schedule-error"));
+$("schedules").addEventListener("click", (e) => {
+  if (e.target.dataset.remove) call("/api/schedules/remove", { number: e.target.dataset.remove });
 });
 
+setInterval(() => {
+  if (S && S.session.active && secondsLeft > 0) {
+    secondsLeft -= 1;
+    const t = $("timer");
+    if (t) t.textContent = fmt(secondsLeft);
+    if (secondsLeft === 0) refresh();
+  }
+}, 1000);
+
+renderDays();
 refresh();
 setInterval(refresh, 5000);
 </script>

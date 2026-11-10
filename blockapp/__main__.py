@@ -9,7 +9,9 @@ from datetime import datetime
 from blockapp import __version__
 from blockapp import apps
 from blockapp import schedule, score, startup
-from blockapp.blocker import run_blocking, run_scheduler
+from blockapp.storage import load_config
+from blockapp.blocker import run_scheduler
+from blockapp.catalog import app_label, site_label
 
 
 def cmd_running(args) -> int:
@@ -21,18 +23,21 @@ def cmd_running(args) -> int:
 
 
 def cmd_list(args) -> int:
-    blocked = apps.blocked_apps()
-    if not blocked:
-        print("No apps blocked yet. Add one with: python -m blockapp add <name>")
-    for name in blocked:
-        print(f"  {name}")
+    config = load_config()
+    if not config["blocked_apps"] and not config["blocked_sites"]:
+        print("Nothing blocked yet. Add something with: python -m blockapp add youtube discord")
+    for name in config["blocked_apps"]:
+        print(f"  {app_label(name)}  (app: {name})")
+    for key in config["blocked_sites"]:
+        print(f"  {site_label(key)}  (website)")
     return 0
 
 
 def cmd_add(args) -> int:
     for name in args.names:
         try:
-            print(f"Added {apps.add_app(name)}")
+            kind, label = apps.add_item(name)
+            print(f"Blocking {label} ({'website' if kind == 'site' else 'app'})")
         except ValueError as e:
             print(e)
             return 1
@@ -40,30 +45,28 @@ def cmd_add(args) -> int:
 
 
 def cmd_remove(args) -> int:
+    from blockapp.catalog import classify
     for name in args.names:
-        if apps.remove_app(name):
-            print(f"Removed {apps.normalize(name)}")
-        else:
-            print(f"{apps.normalize(name)} wasn't on the list")
+        kind, value = classify(name)
+        label = site_label(value) if kind == "site" else app_label(value)
+        print(f"Unblocked {label}" if apps.remove_item(kind, value) else f"{label} wasn't blocked")
     return 0
 
 
 def cmd_block(args) -> int:
-    blocked = apps.blocked_apps()
-    if not blocked:
-        print("Nothing to block. Add apps first with: python -m blockapp add <name>")
+    config = load_config()
+    if not config["blocked_apps"] and not config["blocked_sites"]:
+        print("Nothing to block. Add something first with: python -m blockapp add youtube discord")
         return 1
-    length = f"for {args.minutes:g} minutes" if args.minutes else "until you press Ctrl+C"
-    print(f"Blocking {', '.join(blocked)} {length}.")
-
-    def on_close(name: str) -> None:
-        print(f"[{datetime.now():%H:%M:%S}] Closed {name}")
-
+    end = schedule.start_focus(args.minutes or 24 * 60)
+    print(f"Focus is on until {end:%H:%M}. Press Ctrl+C to stop early.")
     try:
-        run_blocking(blocked, args.minutes, on_close)
+        run_scheduler(lambda msg: print(f"[{datetime.now():%H:%M:%S}] {msg}"),
+                      stop_after=(end - datetime.now()).total_seconds() + 1)
         print("Focus session finished.")
     except KeyboardInterrupt:
-        print("\nBlocking stopped.")
+        schedule.skip_current()
+        print("\nFocus stopped early.")
     return 0
 
 
@@ -144,14 +147,14 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command")
 
     sub.add_parser("running", help="show apps running now").set_defaults(func=cmd_running)
-    sub.add_parser("list", help="show your blocked apps").set_defaults(func=cmd_list)
-    p = sub.add_parser("add", help="block one or more apps, e.g. add discord chrome")
+    sub.add_parser("list", help="show what you block").set_defaults(func=cmd_list)
+    p = sub.add_parser("add", help="block apps or websites, e.g. add youtube discord")
     p.add_argument("names", nargs="+")
     p.set_defaults(func=cmd_add)
-    p = sub.add_parser("remove", help="unblock one or more apps")
+    p = sub.add_parser("remove", help="unblock apps or websites")
     p.add_argument("names", nargs="+")
     p.set_defaults(func=cmd_remove)
-    p = sub.add_parser("block", help="start blocking now")
+    p = sub.add_parser("block", help="start focus now")
     p.add_argument("--minutes", type=float, help="stop after this many minutes")
     p.set_defaults(func=cmd_block)
 

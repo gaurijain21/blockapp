@@ -31,10 +31,19 @@ def _config_path() -> Path:
 def load_config() -> dict:
     path = _config_path()
     if not path.exists():
-        return {"blocked_apps": []}
+        return {"blocked_apps": [], "blocked_sites": []}
     with path.open(encoding="utf-8") as f:
         config = json.load(f)
     config.setdefault("blocked_apps", [])
+    config.setdefault("blocked_sites", [])
+    # Older versions stored websites like "youtube.exe" as apps; move them.
+    from blockapp.catalog import SITES
+    for app in list(config["blocked_apps"]):
+        base = app[:-4] if app.endswith(".exe") else app
+        if base in SITES:
+            config["blocked_apps"].remove(app)
+            if base not in config["blocked_sites"]:
+                config["blocked_sites"].append(base)
     return config
 
 
