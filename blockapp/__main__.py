@@ -132,6 +132,12 @@ def cmd_score(args) -> int:
     return 0
 
 
+def cmd_dashboard(args) -> int:
+    from blockapp.dashboard import serve
+    serve(port=args.port, open_browser=not args.no_browser)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="blockapp", description="Block the apps you can't stop opening.")
     parser.add_argument("--version", action="version", version=f"Blockapp {__version__}")
@@ -166,6 +172,10 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("startup", help="start Blockapp automatically when you sign in to Windows")
     p.add_argument("state", choices=["on", "off"])
     p.set_defaults(func=cmd_startup)
+    p = sub.add_parser("dashboard", help="open the dashboard in your browser")
+    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--no-browser", action="store_true", help="don't open a browser window")
+    p.set_defaults(func=cmd_dashboard)
     p = sub.add_parser("score", help="show your Focus Score")
     p.add_argument("--days", type=int, default=1, help="show a history, e.g. --days 7")
     p.set_defaults(func=cmd_score)

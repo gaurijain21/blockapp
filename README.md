@@ -76,3 +76,12 @@ Every day starts at 100. You lose points for:
 - each minute you spend in your distracting apps outside sessions: 0.5 points (up to 40)
 
 Distracted time is counted while `blockapp run` (or `startup on`) is running, using the app in the front window.
+
+## Dashboard
+
+```powershell
+python -m blockapp dashboard
+```
+
+This opens http://localhost:8765 in your browser. There you can see your Focus Score and the last 7 days, block and unblock apps, add or remove focus sessions, and end a session early.
+While the dashboard is open, it also follows your schedules, so you don't need `run` as well. It only uses Python's standard library, so it doesn't install anything extra.
