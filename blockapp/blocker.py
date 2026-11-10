@@ -61,7 +61,7 @@ def run_scheduler(on_change: Callable[[str], None] | None = None, stop_after: fl
 
     Re-reads settings every tick, so `add`, `schedule add` and `skip` take
     effect without restarting. stop_after (seconds) is for testing."""
-    from blockapp.schedule import current_session_end, is_skipped
+    from blockapp.schedule import is_skipped, session_end
     from blockapp.storage import load_config
 
     from blockapp.usage import distracting_app_in_use
@@ -80,7 +80,7 @@ def run_scheduler(on_change: Callable[[str], None] | None = None, stop_after: fl
     while stop_after is None or time.monotonic() - started < stop_after:
         now = datetime.now()
         config = load_config()
-        end = current_session_end(now, config.get("schedules", []))
+        end = session_end(now, config)
         active = end is not None and not is_skipped(now, config)
         if active and not in_session:
             log_event("session_start", apps=config["blocked_apps"], scheduled=True, until=end.isoformat(timespec="seconds"))

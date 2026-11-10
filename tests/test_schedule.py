@@ -45,3 +45,14 @@ def test_add_list_remove_and_skip():
     assert not schedule.is_skipped(datetime(2026, 11, 9, 12, 0), load_config())
     schedule.remove_schedule(1)
     assert schedule.schedules() == []
+
+
+def test_start_focus_now_and_skip():
+    from blockapp.storage import load_config
+    end = schedule.start_focus(25, MON_10)
+    assert schedule.session_end(MON_10, load_config()) == end
+    assert schedule.skip_current(MON_10) == end
+    config = load_config()
+    assert "focus_until" not in config and schedule.is_skipped(MON_10, config)
+    with pytest.raises(ValueError):
+        schedule.start_focus(0, MON_10)

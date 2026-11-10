@@ -57,6 +57,8 @@
   .list button { border: 0; background: transparent; color: var(--muted); cursor: pointer; }
   .list button:hover { color: var(--bad); }
   .error { color: var(--bad); font-size: 13px; margin-top: 8px; min-height: 1em; }
+  #focus-now { display: inline-flex; gap: 8px; }
+  #focus-now[hidden] { display: none; }
   .hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
 </style>
 </head>
@@ -66,6 +68,14 @@
     <h1>Blockapp</h1>
     <div style="display:flex;gap:8px;align-items:center">
       <span class="status" id="status"><span class="dot"></span><span id="status-text">Loading…</span></span>
+      <span id="focus-now">
+        <select id="focus-minutes" aria-label="Focus length">
+          <option value="25">25 min</option>
+          <option value="50">50 min</option>
+          <option value="90">90 min</option>
+        </select>
+        <button class="btn" id="focus-start">Start focus now</button>
+      </span>
       <button class="btn ghost" id="skip" hidden>End session early</button>
     </div>
   </header>
@@ -141,6 +151,7 @@ function render(s) {
   $("status").classList.toggle("on", s.session.active);
   $("status-text").textContent = s.session.active ? `Focus session on until ${s.session.until}` : "No focus session right now";
   $("skip").hidden = !s.session.active;
+  $("focus-now").hidden = s.session.active;
 
   $("score").textContent = s.score;
   $("label").textContent = s.label;
@@ -195,6 +206,7 @@ $("add-schedule").addEventListener("submit", (e) => {
   call("/api/schedules/add", { days: $("days").value, start: $("start").value, end: $("end").value }, "schedule-error");
 });
 $("skip").addEventListener("click", () => call("/api/skip"));
+$("focus-start").addEventListener("click", () => call("/api/focus", { minutes: $("focus-minutes").value }));
 document.addEventListener("click", (e) => {
   const app = e.target.dataset.removeApp, sched = e.target.dataset.removeSchedule;
   if (app) call("/api/apps/remove", { name: app });

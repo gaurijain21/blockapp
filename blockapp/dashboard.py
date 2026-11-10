@@ -23,7 +23,7 @@ def state() -> dict:
     events = score.load_events()
     today = score.daily_stats(events, score.last_days(1))[0]
     history = score.daily_stats(events, score.last_days(7))
-    end = schedule.current_session_end(now, config.get("schedules", []))
+    end = schedule.session_end(now, config)
     active = end is not None and not schedule.is_skipped(now, config)
     apps_today = sorted(
         set(today.by_app) | set(today.attempts_by_app),
@@ -90,6 +90,8 @@ class Handler(BaseHTTPRequestHandler):
                 schedule.add_schedule(body.get("days", "weekdays"), body.get("start", ""), body.get("end", ""))
             elif self.path == "/api/schedules/remove":
                 schedule.remove_schedule(int(body.get("number", 0)))
+            elif self.path == "/api/focus":
+                schedule.start_focus(float(body.get("minutes", 25)))
             elif self.path == "/api/skip":
                 schedule.skip_current()
             else:

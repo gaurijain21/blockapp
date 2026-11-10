@@ -97,12 +97,40 @@ def current_session_end(now: datetime, entries: list[dict] | None = None) -> dat
     return max(ends) if ends else None
 
 
-def skip_current(now: datetime | None = None) -> datetime | None:
-    """End the current scheduled session early. Returns when it would have ended."""
+def session_end(now: datetime, config: dict) -> datetime | None:
+    """When the current focus session ends (scheduled or started now), or None."""
+    ends = []
+    sched = current_session_end(now, config.get("schedules", []))
+    if sched:
+        ends.append(sched)
+    manual = config.get("focus_until")
+    if manual and now < datetime.fromisoformat(manual):
+        ends.append(datetime.fromisoformat(manual))
+    return max(ends) if ends else None
+
+
+def start_focus(minutes: float, now: datetime | None = None) -> datetime:
+    """Start a focus session right now for this many minutes."""
+    if not 1 <= minutes <= 24 * 60:
+        raise ValueError("Pick between 1 minute and 24 hours.")
     now = now or datetime.now()
-    end = current_session_end(now)
+    end = now + timedelta(minutes=minutes)
+    config = load_config()
+    config["focus_until"] = end.isoformat(timespec="seconds")
+    if config.get("skip_until") and datetime.fromisoformat(config["skip_until"]) > now:
+        config.pop("skip_until")
+    save_config(config)
+    log_event("focus_now", minutes=minutes)
+    return end
+
+
+def skip_current(now: datetime | None = None) -> datetime | None:
+    """End the current focus session early. Returns when it would have ended."""
+    now = now or datetime.now()
+    config = load_config()
+    end = session_end(now, config)
     if end:
-        config = load_config()
+        config.pop("focus_until", None)
         config["skip_until"] = end.isoformat(timespec="seconds")
         save_config(config)
         log_event("skip", until=config["skip_until"])

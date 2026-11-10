@@ -56,7 +56,7 @@ python -m blockapp schedule list
 python -m blockapp schedule remove 2
 python -m blockapp run           # follows your schedules while this window is open
 python -m blockapp startup on    # or: start quietly in the background every time you sign in
-python -m blockapp skip          # end the current scheduled session early
+python -m blockapp skip          # end the current session early
 ```
 
 `--days` takes `weekdays`, `weekends`, `everyday`, a range like `mon-fri`, or a list like `mon,wed,fri`. Times are 24-hour. Windows that cross midnight (like `22:00` to `06:00`) work too.
@@ -83,5 +83,5 @@ Distracted time is counted while `blockapp run` (or `startup on`) is running, us
 python -m blockapp dashboard
 ```
 
-This opens http://localhost:8765 in your browser. There you can see your Focus Score and the last 7 days, block and unblock apps, add or remove focus sessions, and end a session early.
+This opens http://localhost:8765 in your browser. There you can start a 25, 50 or 90 minute focus session right away, see your Focus Score and the last 7 days, block and unblock apps, add or remove focus sessions, and end a session early.
 While the dashboard is open, it also follows your schedules, so you don't need `run` as well. It only uses Python's standard library, so it doesn't install anything extra.

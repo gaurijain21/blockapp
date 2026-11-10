@@ -101,7 +101,7 @@ def cmd_skip(args) -> int:
     if end:
         print(f"Ended this focus session early. Blocking resumes with your next session after {end:%H:%M}.")
     else:
-        print("No scheduled session is on right now.")
+        print("No focus session is on right now.")
     return 0
 
 
