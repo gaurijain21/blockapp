@@ -13,29 +13,65 @@ It has the same three tabs as the Windows dashboard:
 
 When you open a blocked app, you get a purple "Focus time 🎯" screen instead.
 
-## What you need
+## Put it on your iPhone from Windows (TestFlight)
 
-- A Mac with Xcode 15 or newer
-- A paid Apple Developer account (Family Controls only works with one)
-- An iPhone on iOS 16 or newer. The simulator can't block apps.
+You don't need a Mac. GitHub builds and signs the app on one of its Macs and sends it to
+TestFlight, Apple's app for installing test versions. Everything below is done in a web browser.
 
-## Run it on your iPhone
+**1. Wait for Apple to approve your Developer account.** Apple emails you when it's done.
+
+**2. Collect three things from Apple.**
+- **Team ID:** https://developer.apple.com/account, under Membership details (10 letters and numbers).
+- **API key:** https://appstoreconnect.apple.com/access/integrations/api, open Team Keys, press +,
+  name it `GitHub` and pick **Admin** access. Download the `.p8` file (Apple only lets you
+  download it once). Note the **Key ID** next to it and the **Issuer ID** above the list.
+
+**3. Register your iPhone.** Xcode signs builds with a development profile first, and Apple only
+makes one when at least one iPhone is registered. Connect the iPhone to your PC, open the
+Apple Devices app (or iTunes) and click the serial number until it shows the UDID, then copy it.
+Add it at https://developer.apple.com/account/resources/devices/add.
+
+**4. Give GitHub the secrets.** At https://github.com/gaurijain21/blockapp/settings/secrets/actions
+press New repository secret four times:
+
+| Name | Value |
+| --- | --- |
+| `APPLE_TEAM_ID` | your Team ID |
+| `ASC_KEY_ID` | the Key ID |
+| `ASC_ISSUER_ID` | the Issuer ID |
+| `ASC_KEY_P8` | open the `.p8` file in Notepad and paste all of it |
+
+**5. Run the build once.** Open https://github.com/gaurijain21/blockapp/actions/workflows/ios-testflight.yml
+and press Run workflow (this button appears once the iPhone pull request is merged). This first run
+registers Blockapp's app IDs with Apple. It's expected to stop before uploading until step 6 is approved.
+
+**6. Ask Apple for the Family Controls permission.** Apps that block other apps need Apple's
+approval before they can go on TestFlight. Fill in
+https://developer.apple.com/contact/request/family-controls-distribution once for each of these IDs:
+`com.gaurijain21.blockapp`, `com.gaurijain21.blockapp.monitor`,
+`com.gaurijain21.blockapp.shieldconfig` and `com.gaurijain21.blockapp.shieldaction`.
+Apple usually answers in a few days to a few weeks.
+
+**7. Create the app listing.** At https://appstoreconnect.apple.com/apps press + and New App.
+Pick iOS, any free name (for example "Blockapp Focus"), bundle ID `com.gaurijain21.blockapp`, and SKU `blockapp`.
+
+**8. Install it.** Once Apple approves step 6, run the build again. After 5 to 30 minutes it shows up
+in App Store Connect under TestFlight. Add yourself under Internal Testing, install the TestFlight
+app on your iPhone, and open Blockapp from there. Each later run sends a new version.
+
+## Or, with a Mac
+
+Install Xcode 15 or newer, then:
 
 ```bash
 brew install xcodegen
 cd ios
+xcodegen
+open Blockapp.xcodeproj
 ```
 
-1. Open `project.yml` and set `BUNDLE_PREFIX` to something unique, like `com.yourname.blockapp`,
-   and `DEVELOPMENT_TEAM` to your Team ID (Xcode › Settings › Accounts).
-2. Run `xcodegen` to make `Blockapp.xcodeproj`, then open it.
-3. Plug in your iPhone, choose it at the top of Xcode and press ▶︎. Xcode registers the App Group
-   and the Family Controls capability for you.
-4. On the phone, tap **Allow Screen Time**.
-
-The Family Controls capability works for your own testing straight away. To publish on the
-App Store, Apple has to approve it first: request the "Family Controls (Distribution)"
-entitlement at https://developer.apple.com/contact/request/family-controls-distribution.
+Set your team under Signing & Capabilities, plug in your iPhone and press ▶︎. Development builds
+work right away, without waiting for the Family Controls approval. The simulator can't block apps.
 
 ## How it fits together
 
