@@ -8,7 +8,7 @@ Blockapp blocks the apps and websites you can't stop opening, on Windows.
 
 ## Status
 
-All 4 steps are done: app blocking, scheduled focus sessions and the Focus Score. An iPhone version is planned next.
+All 4 steps are done: app blocking, scheduled focus sessions and the Focus Score. An iPhone version is in [`ios/`](ios/README.md).
 
 ## Setup (Windows)
 
